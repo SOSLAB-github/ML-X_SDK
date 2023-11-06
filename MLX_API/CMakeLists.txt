@@ -1,0 +1,23 @@
+cmake_minimum_required (VERSION 3.10)
+
+project(libsoslab VERSION 20230403)
+
+# configuration and make file create
+set(CMAKE_VERBOSE_MAKEFILE true)
+
+# output directory
+add_subdirectory(libsoslab_core)
+add_subdirectory(libsoslab_ml)
+add_subdirectory(examples)
+
+# output directory
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/output/${CMAKE_BUILD_TYPE})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/output/${CMAKE_BUILD_TYPE})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/output/${CMAKE_BUILD_TYPE})
+
+# Install
+install(TARGETS ${OUTPUT_NAME}
+LIBRARY DESTINATION ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+ARCHIVE DESTINATION ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+RUNTIME DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+)

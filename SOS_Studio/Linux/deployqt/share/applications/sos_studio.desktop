@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=sos_studio
+Comment=sos studio for mlx lidar
+Exec=sos_studio
+Icon=sos_studio
+Categories=Release;

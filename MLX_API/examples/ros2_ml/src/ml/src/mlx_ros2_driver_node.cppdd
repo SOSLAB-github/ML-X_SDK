@@ -1,0 +1,294 @@
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <cv_bridge/cv_bridge.h>
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+
+#include <opencv2/opencv.hpp>
+
+#include "libsoslab_ml.h"
+
+using namespace std::chrono_literals;
+// pcl type def
+typedef pcl::PointXYZRGB PointRGB_T;
+typedef pcl::PointCloud<PointRGB_T> PointCloud_T;
+
+int nCols = 0;
+int nRows = 0;
+
+unsigned char soslab_r[] = {3, 4, 5, 5, 6, 6, 7, 8, 8, 9, 9, 10, 10, 11, 12, 12, 13, 13, 14, 15, 15, 16, 16, 17, 18, 18, 19, 19, 20, 21, 21, 22, 22, 23, 24, 24, 25, 25, 26, 27, 27, 28, 28, 29, 29, 30, 31, 31, 32, 32, 33, 34, 34, 35, 35, 36, 37, 37, 38, 38, 39, 40, 40, 41, 41, 42, 42, 43, 43, 43, 44, 44, 45, 45, 46, 46, 46, 47, 47, 48, 48, 49, 49, 49, 50, 50, 51, 51, 51, 52, 52, 53, 53, 54, 54, 54, 55, 55, 56, 56, 57, 57, 57, 58, 58, 59, 59, 60, 60, 60, 61, 61, 62, 62, 62, 63, 63, 64, 64, 65, 65, 66, 66, 66, 67, 67, 68, 68, 70, 71, 73, 75, 77, 79, 80, 82, 84, 86, 88, 90, 92, 93, 95, 97, 99, 101, 102, 104, 106, 108, 110, 111, 113, 115, 117, 119, 120, 122, 124, 126, 128, 129, 131, 133, 135, 137, 138, 140, 142, 144, 145, 147, 149, 151, 153, 154, 156, 158, 160, 162, 163, 165, 167, 169, 171, 172, 174, 176, 178, 180, 181, 183, 184, 185, 187, 188, 189, 190, 191, 192, 194, 195, 196, 197, 198, 199, 200, 201, 203, 204, 205, 206, 207, 208, 209, 210, 212, 213, 214, 215, 216, 217, 218, 219, 221, 222, 223, 224, 225, 226, 227, 228, 230, 231, 232, 233, 234, 235, 236, 237, 239, 240, 241, 242, 243, 244, 245, 246, 248, 249, 250, 251, 252, 253, 254, 254};
+unsigned char soslab_g[] = {18, 19, 21, 23, 24, 26, 27, 29, 30, 32, 33, 35, 37, 38, 40, 41, 43, 44, 46, 47, 49, 50, 52, 54, 55, 57, 58, 60, 61, 63, 64, 66, 67, 69, 71, 72, 74, 75, 77, 78, 80, 81, 83, 84, 86, 88, 89, 91, 92, 94, 95, 97, 98, 100, 101, 103, 105, 106, 108, 109, 111, 112, 114, 116, 117, 118, 119, 120, 121, 122, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 171, 172, 173, 174, 175, 176, 177, 178, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 196, 197, 198, 199, 200, 201, 202, 203, 204, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 247, 248, 249, 250, 251, 252, 253, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
+unsigned char soslab_b[] = {107, 108, 109, 110, 111, 112, 113, 114, 114, 115, 116, 117, 118, 119, 120, 120, 121, 122, 123, 124, 125, 126, 126, 127, 128, 129, 130, 131, 132, 132, 133, 134, 135, 136, 137, 138, 138, 139, 140, 141, 142, 143, 144, 144, 145, 146, 147, 148, 149, 150, 151, 151, 152, 153, 154, 155, 156, 157, 157, 158, 159, 160, 161, 162, 162, 163, 163, 163, 164, 164, 164, 164, 165, 165, 165, 166, 166, 166, 167, 167, 167, 168, 168, 168, 169, 169, 169, 169, 170, 170, 170, 171, 171, 171, 172, 172, 172, 173, 173, 173, 174, 174, 174, 174, 175, 175, 175, 176, 176, 176, 177, 177, 177, 178, 178, 178, 179, 179, 179, 179, 180, 180, 180, 181, 181, 181, 182, 182, 181, 180, 179, 178, 177, 175, 175, 174, 172, 171, 170, 169, 168, 167, 166, 165, 164, 162, 161, 160, 159, 158, 157, 156, 155, 154, 153, 152, 151, 150, 148, 147, 146, 145, 144, 143, 142, 141, 140, 139, 138, 137, 136, 134, 133, 132, 131, 130, 129, 128, 127, 126, 125, 124, 123, 121, 120, 119, 118, 117, 116, 115, 114, 113, 111, 109, 107, 105, 104, 102, 100, 98, 96, 95, 93, 91, 89, 88, 86, 84, 82, 81, 79, 77, 75, 73, 72, 70, 68, 66, 65, 63, 61, 59, 58, 56, 54, 52, 51, 49, 47, 45, 43, 42, 40, 38, 36, 35, 33, 31, 29, 28, 26, 24, 22, 21, 19, 17, 15, 13, 12, 10, 8, 6, 5, 2, 1, 1};
+
+static const char* DEFAULT_IP_ADDR_DEVICE          = "192.168.1.10";
+static const unsigned short DEFAULT_IP_PORT_DEVICE = 2000;
+
+static const char* DEFAULT_IP_ADDR_PC              = "0.0.0.0";
+static const unsigned short DEFAULT_IP_PORT_PC     = 0;
+
+static const char* DEFAULT_PACKAGE_NAME            = "ml";
+
+// Default publisher template
+static const int DEFAULT_PUBLISHER_QUEUE_SIZE = 10;
+static const char* DEFAULT_FRAME_ID = "map";
+static const char* DEFAULT_PUBLISHER_TOPIC_NAME_LiDAR = "pointcloud";
+
+
+cv::Mat colormap(cv::Mat image)
+{
+    nCols = image.cols;
+    nRows = image.rows;
+    
+    int temp_intensity = 0;
+
+    cv::Mat rgb_image(nRows, nCols, CV_8UC3);
+
+    for (int col = 0; col < nCols; col++){
+        for (int row = 0; row < nRows; row++){
+            temp_intensity = image.at<uint8_t>(row, col);
+            float colormap_val0, colormap_val1, colormap_val2;
+            
+            colormap_val0 = soslab_r[temp_intensity];
+            colormap_val1 = soslab_g[temp_intensity];
+            colormap_val2 = soslab_b[temp_intensity];
+
+            rgb_image.at<cv::Vec3b>(row, col)[0] = int(colormap_val0);
+            rgb_image.at<cv::Vec3b>(row, col)[1] = int(colormap_val1);
+            rgb_image.at<cv::Vec3b>(row, col)[2] = int(colormap_val2);
+        }
+    }
+    return rgb_image;
+}
+
+
+class ML2 : public rclcpp::Node
+{
+    public:
+        ML2() : Node("mlx_ros2_driver_node")
+        {
+            DeclareParam();
+            GetParam();
+
+            InitML2();
+
+            // ros publisher setting
+            lidar_pub = create_publisher<sensor_msgs::msg::PointCloud2>("ml/pointcloud", 10);
+            img_intensity_pub = create_publisher<sensor_msgs::msg::Image>("ml/img_intensity", 10);
+            img_ambient_pub = create_publisher<sensor_msgs::msg::Image>("ml/img_ambient", 10);
+            img_depth_pub = create_publisher<sensor_msgs::msg::Image>("ml/img_depth", 10);
+            timer = create_wall_timer(50ms, std::bind(&ML2::TimerCallback, this));
+        
+        }
+        
+        ~ML2()
+        {
+            /* 스트리밍을 종료 합니다. */
+            lidar_ml->stop();
+            std::cout << "Streaming stopped!" << std::endl;
+
+            /* 장치 연결을 해제합니다. */
+            lidar_ml->disconnect();
+
+            std::cout << "Done." << std::endl;
+        }
+
+    private:
+        void DeclareParam();
+        void GetParam();
+        
+        void InitML2();
+        void Pubilisher();
+       
+        void TimerCallback();
+    
+    private:
+        // ros variables
+        rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_pub;
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr img_intensity_pub;
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr img_ambient_pub;
+        rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr img_depth_pub;
+        rclcpp::TimerBase::SharedPtr timer;
+
+        std::shared_ptr<PointCloud_T> pc;
+        sensor_msgs::msg::PointCloud2::SharedPtr msg_pc2;
+
+        sensor_msgs::msg::Image::SharedPtr msg_intensity;
+        sensor_msgs::msg::Image::SharedPtr msg_ambient;
+        sensor_msgs::msg::Image::SharedPtr msg_depth;
+
+        cv_bridge::CvImage img_bridge;
+
+        int queue_size;
+        std::string frame_id;
+        std::string topic_name_lidar;
+
+    private:
+        // ml variables
+        std::shared_ptr<SOSLAB::LidarML> lidar_ml;
+        SOSLAB::ip_settings_t ip_settings_device;
+        SOSLAB::ip_settings_t ip_settings_pc;
+};
+
+
+void ML2::DeclareParam()
+{
+    declare_parameter("ip_address_device", DEFAULT_IP_ADDR_DEVICE);
+    declare_parameter("ip_port_device", DEFAULT_IP_PORT_DEVICE);
+    declare_parameter("ip_address_pc", DEFAULT_IP_ADDR_PC);
+    declare_parameter("ip_port_pc", DEFAULT_IP_PORT_PC);
+    
+    declare_parameter("frame_id", DEFAULT_FRAME_ID);
+    declare_parameter("topic_name_lidar", DEFAULT_PUBLISHER_TOPIC_NAME_LiDAR);
+    declare_parameter("queue_size", DEFAULT_PUBLISHER_QUEUE_SIZE);
+}
+
+void ML2::GetParam()
+{
+    ip_settings_device.ip_address = get_parameter("ip_address_device").as_string();
+    ip_settings_device.port_number = get_parameter("ip_port_device").as_int();
+    ip_settings_pc.ip_address = get_parameter("ip_address_pc").as_string();
+    ip_settings_pc.port_number =  get_parameter("ip_port_pc").as_int();
+    
+    frame_id = get_parameter("frame_id").as_string();
+    topic_name_lidar = get_parameter("topic_name_lidar").as_string();
+    queue_size = get_parameter("queue_size").as_int();
+    
+    std::cout << "> ip_address_device: " << ip_settings_device.ip_address << std::endl;
+    std::cout << "> ip_port_device: " << ip_settings_device.port_number << std::endl;
+    std::cout << "> ip_address_pc: " << ip_settings_pc.ip_address << std::endl;
+    std::cout << "> ip_port_pc: " << ip_settings_pc.port_number << std::endl;
+}
+
+
+void ML2::InitML2()
+{
+    lidar_ml.reset(new SOSLAB::LidarML);
+
+    /* IP 정보를 이용하여 장치에 연결합니다. */
+    bool success;
+    success = lidar_ml->connect(ip_settings_device, ip_settings_pc);
+    
+    if (!success) {
+        std::cerr << "LiDAR ML :: Connection failed." << std::endl;
+        exit(0);
+    }
+
+    /* 데이터 스트리밍을 시작 합니다. */
+    success = lidar_ml->run();
+    if (!success) {
+        std::cerr << "LiDAR ML :: Start failed." << std::endl;
+        exit(0);
+    }
+    std::cout << "> Start streaming ..." << std::endl;
+}
+
+void ML2::TimerCallback()
+{
+    pc.reset(new PointCloud_T);
+    msg_pc2.reset(new sensor_msgs::msg::PointCloud2);
+    msg_intensity.reset(new sensor_msgs::msg::Image);
+    msg_ambient.reset(new sensor_msgs::msg::Image);
+    msg_depth.reset(new sensor_msgs::msg::Image);
+
+    int max_ambient_img_val = 3000;
+    int max_depth_img_val = 10000;
+    int max_intensity_img_val = 3000;
+
+    rclcpp::Time time = now();
+
+    /* Stream FIFO로부터 한 프레임씩 Lidar data를 가져옵니다. */
+    SOSLAB::LidarML::scene_t scene;
+    if (lidar_ml->get_scene(scene)) {
+        std::vector<uint32_t> ambient = scene.ambient_image;
+        std::vector<uint16_t> intensity = scene.intensity_image[0];
+        std::vector<uint32_t> depth = scene.depth_image[0];
+        std::vector<SOSLAB::point_t> pointcloud = scene.pointcloud[0];
+
+        std::size_t height = scene.rows;	// Lidar frame의 height 정보입니다.
+        std::size_t width = scene.cols;	// Lidar frame의 width 정보입니다.
+        std::size_t width2 = (scene.cols == 192) ? scene.cols*3 : scene.cols;
+        /* Ambient Image */
+        /* 측정 된 모든 빛을 표현 한 데이터 입니다. */
+        cv::Mat ambient_image(height, width2, CV_32SC1, ambient.data());
+        ambient_image.convertTo(ambient_image, CV_8UC1, (255.0 / (max_ambient_img_val - 0)), 0);
+        ambient_image = colormap(ambient_image);
+        cv::normalize(ambient_image, ambient_image, 0, 255, cv::NORM_MINMAX);
+        msg_ambient->header.frame_id = frame_id;
+        msg_ambient->header.stamp = time;
+        img_bridge = cv_bridge::CvImage(msg_ambient->header, "rgb8", ambient_image);
+        img_bridge.toImageMsg(*msg_ambient);
+        img_ambient_pub->publish(*msg_ambient);
+
+        /* Depth Image */
+        /* 원점(Lidar)로부터의 거리 정보입니다. (unit: mm) */
+        cv::Mat depth_image(height, width, CV_32SC1, depth.data());
+        depth_image.convertTo(depth_image, CV_16U);
+        depth_image.convertTo(depth_image, CV_8UC1, (255.0 / (max_depth_img_val - 0)), 0);
+        // depth_image.convertTo(depth_image, CV_8U, 1.0 / 64.0);
+        depth_image = colormap(depth_image);
+        cv::normalize(depth_image, depth_image, 0, 255, cv::NORM_MINMAX);
+        msg_depth->header.frame_id = frame_id;
+        msg_depth->header.stamp = time;
+        img_bridge = cv_bridge::CvImage(msg_depth->header, "rgb8", depth_image);
+        img_bridge.toImageMsg(*msg_depth);
+        img_depth_pub->publish(*msg_depth);
+
+
+        /* Intensity Image */
+        cv::Mat intensity_image_raw(height, width, CV_16UC1, intensity.data());
+        cv::Mat intensity_image;
+        intensity_image_raw.convertTo(intensity_image, CV_8UC1, (255.0 / (max_intensity_img_val - 0)), 0);
+        // intensity_image_raw.convertTo(intensity_image, CV_8UC1, 1.0 / 1.0);
+        intensity_image = colormap(intensity_image);
+        msg_intensity->header.frame_id = frame_id;
+        msg_intensity->header.stamp = time;
+        img_bridge = cv_bridge::CvImage(msg_intensity->header, "rgb8", intensity_image);
+        img_bridge.toImageMsg(*msg_intensity);
+        img_intensity_pub->publish(*msg_intensity);
+
+        /* Point Cloud */
+        /* normalize (min-max) */
+        pc->header.frame_id = frame_id;
+        pc->width = width;
+        pc->height = height;
+        pc->points.resize(pointcloud.size());
+
+        for (int col=0; col < width; col++) {
+            for (int row = 0; row < height; row++) {
+                int idx = col + (width * row);
+
+                // float x = pointcloud[idx].x / 1000.0;
+                // float y = pointcloud[idx].y / 1000.0;
+                // float z = pointcloud[idx].z / 1000.0;
+
+                //unit : (m)
+                pc->points[idx].x = pointcloud[idx].x / 1000.0 ;
+                pc->points[idx].y = pointcloud[idx].y / 1000.0 ;
+                pc->points[idx].z = pointcloud[idx].z / 1000.0 ;
+
+                pc->points[idx].r = (uint8_t)(intensity_image.at<cv::Vec3b>(row, col)[0]);
+                pc->points[idx].g = (uint8_t)(intensity_image.at<cv::Vec3b>(row, col)[1]);
+                pc->points[idx].b = (uint8_t)(intensity_image.at<cv::Vec3b>(row, col)[2]);
+            }
+        }
+        
+        // publish the pointcloud
+        pcl::toROSMsg(*pc, *msg_pc2);
+        msg_pc2->header.frame_id = frame_id;
+        msg_pc2->header.stamp = time;
+        lidar_pub->publish(*msg_pc2);
+    }
+}
+
+
+int main(int argc, char * argv[])
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<ML2>());
+    rclcpp::shutdown();
+   
+    return 0;
+}

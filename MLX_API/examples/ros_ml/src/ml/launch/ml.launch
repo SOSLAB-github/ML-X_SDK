@@ -1,0 +1,23 @@
+<launch>
+  <node pkg="ml" type="ml" name="ml_" output="screen">
+
+        <param name="ip_address_device"       value="192.168.1.10" type="string"/>
+        <param name="ip_port_device"          value="2000"         type="int"/>
+
+        <param name="ip_address_pc"           value="0.0.0.0"      type="string"/>
+        <param name="ip_port_pc"              value="0"            type="int"/>
+
+        <param name="ambient_enable"          value="true"         type="bool"/>
+        <param name="depth_enable"            value="true"         type="bool"/>
+        <param name="intensity_enable"        value="true"         type="bool"/>
+        <param name="multi_echo_enable"       value="false"        type="bool"/>
+
+        <param name="depth_completion_enable" value="false"        type="bool"/>
+        <param name="fps10"                   value="false"        type="bool"/>
+
+  </node>
+
+  <!-- Visualisation RVIZ --> 
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ml)/rviz/demo.rviz"/>
+
+</launch>
