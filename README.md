@@ -1,15 +1,16 @@
-# SOS LAB ML-X LiDAR SDK
+# SOSLAB ML-X LiDAR SDK
 ---
-This is a **C++ Software Development Kit(SDK)** for connecting and using the **ML-X LiDAR developed by SOS LAB.**</br>
+This is a **C++ Software Development Kit(SDK)** for connecting and using the **ML-X LiDAR developed by SOSLAB.**</br>
 </br>
 ![SOS Studio Example](Etc/sos_studio_example.gif)</br>
 
 ## Release Version
-- SDK v2.1
+- SDK v2.1.1
 
 # Update
-- Release v2.1
-- Add PTP, F/W Update Function (only supported in F/W Versions 1.5 and 2.1.)
+- Release v2.1.1
+- Add PTP (only supported in F/W Versions 1.5 and 2.1.)
+- Fix Firmware Update Function in SOS Studio
 - Add Callback Function
 - Support for Python, ROS2
 
@@ -26,7 +27,7 @@ To get started with this project, you will need:
 
 - C++ development environment
 - Windows or Ubuntu operating system
-- SOS LAB ML-X LiDAR device
+- SOSLAB ML-X LiDAR device
 
 ## Installation and Setup
 
