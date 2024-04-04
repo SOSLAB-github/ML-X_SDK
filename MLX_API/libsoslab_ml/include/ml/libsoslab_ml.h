@@ -7,9 +7,6 @@
 #define LIDAR_ML_H_
 
 #include "soslab_typedef.h"
-#include "core/json.hpp"
-#include "core/logger.h"
-#include "core/ext_interfaces.h"
 
 namespace SOSLAB
 {
@@ -30,7 +27,6 @@ namespace SOSLAB
 		} scene_t;
 
 		typedef void(*receive_scene_callback_t)(void* arg, scene_t& scene_);
-		typedef nlohmann::json json_t;
 
 		explicit LidarML();
 		~LidarML();

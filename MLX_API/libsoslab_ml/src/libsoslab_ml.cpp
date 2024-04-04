@@ -4,6 +4,9 @@
  */
 
 #include "ml/libsoslab_ml.h"
+#include "core/json.hpp"
+#include "core/logger.h"
+#include "core/ext_interfaces.h"
 
 #ifdef _WIN32
 #include<direct.h>
@@ -18,13 +21,15 @@
 
 using namespace SOSLAB;
 
+typedef nlohmann::json json_t;
+
 class MLX
 {
 private:
 	std::shared_ptr<ExtInterfaceBase> udp_interface_;
 	std::shared_ptr<ExtInterfaceBase> tcp_interface_;
 
-	Fifo<LidarML::json_t> ack_buffer_;
+	Fifo<json_t> ack_buffer_;
 
 	Fifo<LidarML::scene_t> scene_buffer_;
 
@@ -443,7 +448,7 @@ public:
 private:
 	bool get_ack()
 	{
-		LidarML::json_t jsn;
+		json_t jsn;
 		bool res = false;
 		std::chrono::seconds json_ack_time_out = std::chrono::seconds{ 3 };
 		std::chrono::system_clock::time_point begin = std::chrono::system_clock::now();
@@ -486,23 +491,23 @@ private:
 		memcpy(&json_receive[0], &data[0], size);
 
 		try {
-			LidarML::json_t jsn = LidarML::json_t::parse(json_receive);
+			json_t jsn = json_t::parse(json_receive);
 			ack_buffer_.push(jsn);
 			jsn.clear();
 		}
-		catch (const SOSLAB::LidarML::json_t::parse_error&) {
+		catch (const json_t::parse_error&) {
 			std::cerr << "LiDAR ML :: json parse error" << std::endl;
 		}
-		catch (const SOSLAB::LidarML::json_t::invalid_iterator&) {
+		catch (const json_t::invalid_iterator&) {
 			std::cerr << "LiDAR ML :: json invalid_iterator error" << std::endl;
 		}
-		catch (const SOSLAB::LidarML::json_t::type_error&) {
+		catch (const json_t::type_error&) {
 			std::cerr << "LiDAR ML :: json type error" << std::endl;
 		}
-		catch (const SOSLAB::LidarML::json_t::out_of_range&) {
+		catch (const json_t::out_of_range&) {
 			std::cerr << "LiDAR ML :: json out_of_range error" << std::endl;
 		}
-		catch (const SOSLAB::LidarML::json_t::other_error&) {
+		catch (const json_t::other_error&) {
 			std::cerr << "LiDAR ML :: json other error" << std::endl;
 		}
 	}
@@ -674,7 +679,7 @@ SOSLAB::LidarML::~LidarML()
 std::string SOSLAB::LidarML::api_info()
 {
 	std::stringstream ss;
-	ss << "SOSLAB LiDAR ML-X API v2.1.0 build";
+	ss << "SOSLAB LiDAR ML-X API v2.3.0 build";
 	return ss.str();
 }
 

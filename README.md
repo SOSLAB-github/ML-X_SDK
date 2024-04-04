@@ -5,14 +5,12 @@ This is a **C++ Software Development Kit(SDK)** for connecting and using the **M
 ![SOS Studio Example](Etc/sos_studio_example.gif)</br>
 
 ## Release Version
-- SDK v2.1.1
+- SDK v2.3.0
 
 # Update
-- Release v2.1.1
-- Add PTP (only supported in F/W Versions 1.5 and 2.1.)
-- Fix Firmware Update Function in SOS Studio
-- Add Callback Function
-- Support for Python, ROS2
+- Release v2.3.0
+- Remove unnecessary code
+- Modify to allow changes to PC Gateway and Netmask
 
 ## Table of Contents
 
@@ -84,8 +82,8 @@ chmod a+x ./deployqt/bin/sos_studio
 
 User guides can be found in the `User_Guide` folder:
 
-- [User Guide (English)](User_Guide/ML-X_User_Guide_v2.1(EN).pdf)
-- [User Guide (Korean)](User_Guide/ML-X_User_Guide_v2.1(KOR).pdf)
+- [User Guide (English)](User_Guide/ML-X_User_Guide_v2.3.0(EN).pdf)
+- [User Guide (Korean)](User_Guide/ML-X_User_Guide_v2.3.0(KOR).pdf)
 
 
 ## License

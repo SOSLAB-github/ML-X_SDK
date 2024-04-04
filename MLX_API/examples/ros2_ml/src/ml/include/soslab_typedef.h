@@ -1,24 +1,22 @@
 /*
- * soslab_typdef.h
- *
- *  Created on: Nov 16, 2018
- *      Author: gnohead
+ * Copyright (c) 2023, SOSLAB, Inc. Team SSD.
+ * All rights reserved.
  */
 
 #ifndef SOSLAB_TYPEDEF_H_
 #define SOSLAB_TYPEDEF_H_
 
-#include <cstdint>
-#include <string>
+#include <iostream>
+#include <sstream>
 #include <vector>
-#include <utility>
-#include <cmath>
+#include <deque>
+#include <condition_variable>
+#include <fstream>
+#include <map> //C++03
+#include <iomanip>
+#include <functional>
+#include <thread>
 #include <cstring>
-#include <system_error>
-#include <limits>
-
-#define _USE_MATH_DEFINES
-#include <math.h>
 
 /* Macros */
 #ifdef SOSLABAPI_EXPORTS
@@ -51,18 +49,6 @@
 /* common type definitions */
 namespace SOSLAB
 {
-    /** @brief integer */
-    typedef int32_t INT_T;
-
-    /** @brief unsigned int */
-    typedef uint32_t UINT_T;
-
-    /** @brief floating point */
-    typedef double FLOAT_T;
-
-    /** @brief data arryay */
-    typedef std::vector<uint8_t> hex_array_t;
-
     /** @brief The structure of a single point for the cartesian coordinate. */
     typedef struct _POINT_T
     {
@@ -71,14 +57,41 @@ namespace SOSLAB
         float z;          /**< z value (unit : mm) */
     } point_t;
 
-    /** @brief Structure of the pointcloud of SOSLAB LiDAR */
-    typedef std::vector<point_t> pointcloud_t;
-
     /** @brief IP communication address */
     typedef struct IP_ADDRESS_T {
         std::string ip_address;
         int port_number;
     } ip_settings_t;
+
+	typedef struct _PCD_ {
+		int64_t x : 21;
+		int64_t y : 21;
+		int64_t z : 21;
+		int64_t rsvd : 1;
+	}point_cloud_t;
+
+	#pragma pack(push, 1)
+		typedef struct _ML_LIDAR_PACKET_ {
+			char header[8];
+			uint64_t timestamp;
+			uint64_t status;
+			union {
+				struct {
+					uint8_t multi_echo : 1;
+					uint8_t rsvd : 3;
+					uint8_t depth_completion : 1;
+					uint8_t ambient_disable : 1;
+					uint8_t depth_disable : 1;
+					uint8_t intensity_disable : 1;
+				}type;
+				uint8_t packet_type;
+			};
+			uint8_t frame_id;
+			uint8_t row_number;
+			uint8_t rsvd[5];
+		} ml_lidar_packet_t;
+	#pragma pack(pop)
+
 } /* namespace SOSLAB */
 
 
