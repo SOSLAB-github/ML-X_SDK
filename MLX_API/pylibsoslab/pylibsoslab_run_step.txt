@@ -1,9 +1,0 @@
-linux
-1. sudo apt install python3-pip
-2. pip3 install --force-reinstall pylibsoslab-1.0-py2.py3-none-any.whl
-3. ./install_library.sh
-4. python3 ./test_ml.py
-
-windows
-1. pip install --force-reinstall pylibsoslab-1.0-py2.py3-none-any.whl
-2. python ./test_ml.py
