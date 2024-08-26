@@ -31,7 +31,7 @@ class Scene:
         self.ambient_image = [0] * (self.rows * 576)
         self.depth_image = [0] * (self.rows * self.cols)
         self.intensity_image = [0] * (self.rows * self.cols)
-        self.pointcloud = [Point(0.0, 0.0, 0.0)] * (self.rows * self.cols)
+        self.pointcloud = [Point(0.0, 0.0, 0.0) for _ in range((self.rows * self.cols))]
 
 # LidarML class to handle ML operations
 class LidarML:
